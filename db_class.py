@@ -475,8 +475,3 @@ LIMIT 5;
         print(records)
         return records
 
-
-my_db_connect = mysql_connector("localhost", "root", "password", "nptel_management")
-
-
-my_db_connect.getToppersgivenSemandYear("odd", "2021-22")

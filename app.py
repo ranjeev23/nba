@@ -70,7 +70,7 @@ def succesfulexcel():
 
 
 #get the year wise statistics
-@app.route("/yearwise-statistics", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"])
 def yearwise_statistics():
     
     #if it is a get request

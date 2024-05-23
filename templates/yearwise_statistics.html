@@ -327,7 +327,7 @@
         </div>
         <div
           class="navbar-item"
-          onclick="window.location.href='/yearwise-statistics';"
+          onclick="window.location.href='/';"
         >
           <p>Yearwise Statistics</p>
         </div>
@@ -505,6 +505,11 @@
                         display: true,
                         align: 'end',
                         anchor: 'center',
+                        font:{
+                            family: 'sans-serif',
+                            size: 14,
+                            weight: 'bold'
+                        },
                         formatter: (value, context) => value
                     }
                 }
@@ -613,6 +618,11 @@
                     },
                     datalabels: {
                         display: true,
+                        font:{
+                            family: 'sans-serif',
+                            size: 14,
+                            weight: 'bold'
+                        },
                         align: 'end',
                         anchor: 'end',
                         formatter: (value, context) => value
