@@ -27,7 +27,6 @@ class mysql_connector:
         except:
             print("error occured in setting connection with database")
 
-
     def toppers_table(self):
 
         semester = [2, 4]
@@ -475,3 +474,36 @@ LIMIT 5;
         print(records)
         return records
 
+    def enorllemntcountyearwise(self):
+        print("")
+        print("This is the data for accademic year enrollment")
+        print("")
+        query_det = f"""
+        select acc_year,count(distinct(regno)) from nptel_marks group by acc_year;
+        """
+
+        self.cursor.execute(query_det)
+        records = self.cursor.fetchall()
+        records = [{"year": year, "enrollment_count": count} for year, count in records]
+        print(records)
+        return records
+
+    def course_enrollment_count(self):
+        print("")
+        print("This is the data for accademic year enrollment")
+        print("")
+        query_det = f"""
+        select c_name,count(regno) 
+        from nptel_marks nm
+        join course c on nm.c_code = c.c_code
+        group by nm.c_code 
+        order by count(regno) desc;
+        """
+
+        self.cursor.execute(query_det)
+        records = self.cursor.fetchall()
+        records = subject_enrollment_data = [
+            {"name": name, "count": count} for name, count in records
+        ]
+        print(records)
+        return records

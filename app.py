@@ -11,14 +11,14 @@ my_db_connect = db_class.mysql_connector(
     "localhost", "root", "password", "nptel_management"
 )
 
-#page to add the excel files to mysql database
+# page to add the excel files to mysql database
 @app.route("/upload-marks-from-excel")
 def upload_marks_from_excel():
     return render_template("upload_excel.html")
 
 
 ## check and correct this function
-#populate databse using the excel files
+# populate databse using the excel files
 @app.route("/populate-database-from-excel", methods=["POST"])
 def populate_database_from_excel():
     if request.method == "POST":
@@ -63,34 +63,45 @@ def populate_database_from_excel():
         else:
             return "Unsupported file format. Please upload a .xlsx or .xls file."
 
-#show excel files to show insertion succesfull
+# show excel files to show insertion succesfull
 @app.route("/succesful-excel")
 def succesfulexcel():
     return render_template("succesful.html")
 
 
-#get the year wise statistics
 @app.route("/", methods=["GET", "POST"])
 def yearwise_statistics():
-    
-    #if it is a get request
+    print(request.method)
     if request.method == "GET":
-        
+
+        # real data
         acc_year = my_db_connect.getDistinctAcademicYears()
         sem_type = my_db_connect.getDistinctSemesterTypes()
+        # Sample data for GET request
+        yearwise_enrollment_data = my_db_connect.enorllemntcountyearwise()
+        subject_enrollment_data = my_db_connect.course_enrollment_count()
 
-        context = {"acc_year": acc_year, "sem_type": sem_type}
+        context = {
+            "acc_year": acc_year,
+            "sem_type": sem_type,
+            "yearwise_enrollment_data": yearwise_enrollment_data,
+            "subject_enrollment_data": subject_enrollment_data,
+            "post_request": False,
+        }
+        print("********")
         print(context)
+        print("rendering template")
         return render_template("yearwise_statistics.html", **context)
 
-    #if it is a post request
     elif request.method == "POST":
+        print("2222222")
         course_selected = request.form["course_selected"]
         sem_selected = request.form["sem_selected"]
         print("!!!!!!")
         print(course_selected)
         print(sem_selected)
 
+        # real data
         acc_year = my_db_connect.getDistinctAcademicYears()
         sem_type = my_db_connect.getDistinctSemesterTypes()
         enrollment_count = my_db_connect.getUniqueRegnoCountBySemTypeAndYear(

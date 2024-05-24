@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -299,6 +298,8 @@
             /* Ensure canvas fills parent height */
         }
 
+
+
         @media (max-width: 768px) {
             .chart-container {
                 height: 300px;
@@ -316,25 +317,6 @@
 </head>
 
 <body>
-    <div class="toggle-area" data-toggle="offcanvas"></div>
-    <div class="side-navbar">
-        <div class="navbar-options">
-        <div
-          class="navbar-item"
-          onclick="window.location.href='/upload-marks-from-excel';"
-        >
-          <p>Upload Results</p>
-        </div>
-        <div
-          class="navbar-item"
-          onclick="window.location.href='/';"
-        >
-          <p>Yearwise Statistics</p>
-        </div>
-      </div>
-    </div>
-
-
     <div class="content">
         <nav class="navbar navbar-expand-lg navbar-light">
             <button class="navbar-toggler" type="button" data-toggle="offcanvas">
@@ -346,9 +328,14 @@
         </nav>
 
         <h1>Welcome to SSN NPTEL Examinations Management System</h1>
-        <h2>General Statistics</h2>
+        <h2>{{post_request}}General Statistics</h2>
         <div class="container">
             <div class="row justify-content-center">
+                 <form id="homeButton" method="GET"  action="{{ url_for('yearwise_statistics')}}">
+                        <button type="home" class="btn btn-primary">
+                            <i class="fas fa-home"></i>  
+                        </button>
+                </form>
                 <div class="col-md-4">
                     <form id="courseSelect" method="post" action="{{ url_for('yearwise_statistics')}}">
                         <div class="input-group mb-3">
@@ -360,6 +347,7 @@
                                 {% endfor %}
                             </select>
                         </div>
+                    </form>
                 </div>
                 <div class="col-md-4">
                     <div class="input-group mb-3">
@@ -372,13 +360,46 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary btn-block">Search</button>
-                    <input type="hidden" name="course_selected" id="courseSelected" value="">
-                    <input type="hidden" name="sem_selected" id="semSelected" value="">
+                    <form id="searchForm" method="post" action="{{ url_for('yearwise_statistics')}}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        <input type="hidden" name="course_selected" id="courseSelected" value="">
+                        <input type="hidden" name="sem_selected" id="semSelected" value="">
+                    </form>
+                
                 </div>
-                </form>
+                
             </div>
         </div>
+
+
+        {% if not post_request %}
+             
+            <div id="dashboard" class="container">
+                <h2>NPTEL</h2>
+                <div class="chart-container" style="height: 400px;">
+                    <canvas id="yearwiseEnrollmentChart"></canvas>
+                </div>
+                <div class="container">
+                    <h2>Course Enrolllments</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Subject Name</th>
+                                <th>Number of Enrolled Students</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subjectEnrollmentTableBody">
+                            <!-- Subject enrollment data will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        {% endif %}
+
+
         {% if post_request %}
         <div class='container'>
             <div class="container">
@@ -427,6 +448,95 @@
     {% endif %}
 
     <script>
+
+        {% if not post_request %}
+            document.addEventListener('DOMContentLoaded', function () {
+            // Data for year-wise enrollment chart
+            var yearwiseEnrollmentData = {{ yearwise_enrollment_data | tojson }};
+            var years = yearwiseEnrollmentData.map(function(item) {
+                return item.year;
+            });
+            var enrollments = yearwiseEnrollmentData.map(function(item) {
+                return item.enrollment_count;
+            });
+
+            // Bar Chart for Year-wise Enrollment
+            var ctx = document.getElementById('yearwiseEnrollmentChart').getContext('2d');
+            var yearwiseEnrollmentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: years,
+                    datasets: [{
+                        label: 'Enrollment Count',
+                        data: enrollments,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Enrollment Count',
+                                font: {
+                                    family: 'Arial',
+                                    size: 14,
+                                    weight: '400'
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Year',
+                                font: {
+                                    family: 'Arial',
+                                    size: 14,
+                                    weight: '400'
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'NPTEL Unique Enrollment Count by Year',
+                            align: 'center',
+                            font: {
+                                family: 'sans-serif',
+                                size: 16
+                            }
+                        },
+                        datalabels: {
+                            display: true,
+                            font: {
+                                family: 'sans-serif',
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            align: 'end',
+                            anchor: 'center',
+                            formatter: (value, context) => value
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
+
+
+            // Data for subject enrollment table
+            var subjectEnrollmentData = {{ subject_enrollment_data | tojson }};
+            var subjectEnrollmentTableBody = document.getElementById('subjectEnrollmentTableBody');
+            subjectEnrollmentData.forEach(function(subject) {
+                var row = document.createElement('tr');
+                row.innerHTML = `<td>${subject.name}</td><td>${subject.count}</td>`;
+                subjectEnrollmentTableBody.appendChild(row);
+            });
+        });
+    {% endif %}
 
         {% if course %}
         document.getElementById("courseSelector").value = "{{ course }}";
